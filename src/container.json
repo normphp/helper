@@ -1,0 +1,9 @@
+{
+  "title":"Helper",
+  "author": "pizepei",
+  "packageExplain": "Helper",
+  "bind": {
+    "HelperContainer":[
+    ]
+  }
+}

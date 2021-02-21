@@ -1,0 +1,28 @@
+{
+    "name": "normphp/helper",
+    "description": "helper",
+    "keywords": ["helper","helper一个通用的助手类库"],
+    "homepage": "https://normphp.org/",
+    "authors": [
+        {
+            "name": "pizepei",
+            "email": "pizepei@pizepei.com"
+        }
+    ],
+    "require": {
+        "normphp/container": "dev-main",
+        "ext-json": "*",
+        "php": ">=7.0.0"
+    },
+    "packages-dev":{
+        "viest/php-ext-xlswriter-ide-helper": "dev-master"
+    },
+    "repositories": {
+
+    },
+    "autoload": {
+        "psr-4": {
+            "normphp\\helper\\": "src/"
+        }
+    }
+}
