@@ -121,71 +121,70 @@ class Helper extends Container
     /***********************************函数方法*****************************************************/
 
     /**
-     *
      * @title  生成uuid方法
      * @param bool $strtoupper 是否大小写 true为大写
      * @param int  $separator 分隔符  45 -       0 空字符串
-     * @param bool $parameter true 是否使用空间配置分布式时不同机器上使用不同的值
+     * @param string $parameter 是否使用空间配置分布式时不同机器上使用不同的值
      * @return string
      */
-    public  function getUuid(bool $strtoupper=false,int $separator=45,string $parameter=''):string
+    public  function getUuid(bool $strtoupper=false, int $separator=45, string $parameter=''):string
     {
         $charid = md5(($parameter==''?$parameter:mt_rand(10000,99999)).uniqid((string)mt_rand(), true));
-        if($strtoupper){$charid = strtoupper($charid);}
+        if ($strtoupper) {
+            $charid = strtoupper($charid);
+        }
         $hyphen = chr($separator);// "-"
-        $uuid = substr($charid, 0, 8).$hyphen
+        return substr($charid, 0, 8).$hyphen
             .substr($charid, 8, 4).$hyphen
-            .substr($charid,12, 4).$hyphen
-            .substr($charid,16, 4).$hyphen
-            .substr($charid,20,12);
-        return $uuid;
+            .substr($charid, 12, 4).$hyphen
+            .substr($charid, 16, 4).$hyphen
+            .substr($charid, 20, 12);
     }
 
     /**
-     * @Author 皮泽培
      * @Created 2019/7/17 16:10
-     * @param $data
-     * @param $name
      * @title  判断是否为空
+     * @param $data
+     * @param string|array $name 为空时直接判断data是否是int 0  string 0 array []
      * @explain 如果为int 0  string 0 array [] 都会返回 true
      * @return bool
      * @throws \Exception
      */
-    public function is_empty($data,$name=''):bool
+    public function is_empty($data, $name=''):bool
     {
-        if ($name == ''){
-            if (empty($data) || $data === 0 || $data === '0' || $data === '' || $data===[]){
+        if ($name === '') {
+            if ($data === 0 || $data === '0' || $data === '' || $data===[]) {
                 return true;
             }
-        }else if (is_array($data) && $name !== ''){
+        }elseif (is_array($data)) {
             # 判断是否存在
-            if (!is_array($name)){
+            if (!is_array($name)) {
                 $name = [$name];
             }
-            foreach ($name as $key=>$value)
-            {
-                if (isset($data[$value])){
-                    if (empty($data[$value]) || $data[$value] === 0 || $data[$value] === '0' || $data[$value] === '' || $data[$value] === []){
+            foreach ($name as $value) {
+                if (array_key_exists($value, $data)) {
+                    if ($data[$value] === 0 || $data[$value] === '0' || $data[$value] === '' || $data[$value] === []) {
                         return true;
                     }
-                }else{
+                } else {
                     return true;
                 }
             }
         }else{
-            throw new \Exception('参数错误');
+            throw new \Exception('参数错误:name参数为空时data必须为array格式');
         }
         return false;
     }
 
     /**
      * @title http请求方法
-     * @param $url 请求地址（get参数拼接上）
-     * @param dtring $data 请求的主体数据
+     * @param string $url 请求地址（get参数拼接上）
+     * @param string $data 请求的主体数据
      * @param array $parameter 参数 ssl[0、2]默认2验证https ssl       type [get、put、post、delete] 默认get，有$data自动设置为post        timeout  超时单位秒
      * @return array info 请求信息  body 获取的请求body  error 错误数据   header  响应方的响应header
+     * @throws \Exception
      */
-    public function httpRequest(string $url,string $data='',array $parameter=[]):array
+    public function httpRequest(string $url, string $data='', array $parameter=[]):array
     {
         # 后面考虑是否不使用 throw
         if (empty($url) || $url=='.json'){throw new \Exception('url empty');}
@@ -205,12 +204,12 @@ class Helper extends Container
         /**
          * 请求类型
          */
-        if (isset($parameter['type'])){
+        if (isset($parameter['type'])) {
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $parameter['type']); //定义请求类型
-            if (!empty($data)){
+            if (!empty($data)) {
                 curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
             }
-        }else if (!empty($data)) {
+        }elseif (!empty($data)) {
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         }
@@ -218,7 +217,7 @@ class Helper extends Container
          * 判断是否需要设置header
          */
         $header = ['content-type: application/json'];
-        if (isset($parameter['header'])){
+        if (isset($parameter['header'])) {
             $header = $parameter['header'];
             //定义header
         }
@@ -230,7 +229,7 @@ class Helper extends Container
          * 设置COOKIE
          */
         if (isset($parameter['cookie'])){
-            foreach ($parameter['cookie'] as $value){
+            foreach ($parameter['cookie'] as $value) {
                 curl_setopt($curl, CURLOPT_COOKIE, $value);
             }
         }
@@ -273,36 +272,36 @@ class Helper extends Container
      * @return array
      * @throws \Exception
      */
-    public function json_decode(string $json,$assoc = true,int $depth=512,$options = JSON_BIGINT_AS_STRING):array
+    public function json_decode(string $json, bool $assoc = true, int $depth=512, int $options = JSON_BIGINT_AS_STRING):array
     {
         # 正常解析
-        $data = json_decode($json,$assoc,$depth,$options);
-        if ($data){
+        $data = json_decode($json, $assoc, $depth, $options);
+        if ($data) {
             # json字符串必须是utf8编码
             $encode = mb_detect_encoding($json, array("ASCII",'UTF-8',"GB2312","GBK",'BIG5'));
-            if ($encode !== 'UTF-8'){
+            if ($encode !== 'UTF-8') {
                 $json = mb_convert_encoding($json, 'UTF-8', $encode);
-                $data = json_decode($json,$assoc,$depth,$options);
+                $data = json_decode($json, $assoc, $depth, $options);
             }
         }
         /**
          * 正常解析失败  编码解析失败
          */
-        if (!$data){
+        if (!$data) {
             #清除bom头
             $jsonUrl = urlencode($json);
-            $data = json_decode(urldecode(trim($jsonUrl, "\xEF\xBB\xBF")),$assoc,$depth,$options);
+            $data = json_decode(urldecode(trim($jsonUrl, "\xEF\xBB\xBF")), $assoc, $depth, $options);
         }
         #清除bom头失败
         if (!$data){
             #替换' 为"
-            $data = json_decode(str_replace("'", '"', $json),$assoc,$depth,$options);
+            $data = json_decode(str_replace("'", '"', $json), $assoc, $depth, $options);
         }
         #替换'失败
-        if (!$data){
+        if (!$data) {
             #不能有多余的逗号 如：[1,2,]
             $json = preg_replace('/,\s*([\]}])/m', '$1', $json);
-            $data = json_decode(str_replace("'", '"', $json),$assoc,$depth,$options);
+            $data = json_decode(str_replace("'", '"', $json), $assoc, $depth, $options);
         }
         #可能是开启get_magic_quotes_gpc  这里就不做处理
         return $data?$data:[];
@@ -332,11 +331,11 @@ class Helper extends Container
         /**
          *direct 直连   cdn 官方cnd   代理 agency
          */
-        if($type== 'direct'){
-            if(isset($_SERVER)){
-                $realip = $_SERVER['REMOTE_ADDR'];
+        if($type== 'direct') {
+            if(isset($_SERVER)) {
+                $ip = $_SERVER['REMOTE_ADDR'];
             }else{
-                $realip = getenv("REMOTE_ADDR");
+                $ip = getenv("REMOTE_ADDR");
             }
 
         }else if($type == 'cdn' || $type == 'agency'){
@@ -344,34 +343,34 @@ class Helper extends Container
             //判断服务器是否允许$_SERVER
             if(isset($_SERVER)){
                 if(isset($_SERVER['HTTP_X_FORWARDED_FOR'])){
-                    $realip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+                    $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
                 }elseif(isset($_SERVER['HTTP_CLIENT_IP'])) {
-                    $realip = $_SERVER['HTTP_CLIENT_IP'];
+                    $ip = $_SERVER['HTTP_CLIENT_IP'];
                 }else{
-                    $realip = $_SERVER['REMOTE_ADDR'];
+                    $ip = $_SERVER['REMOTE_ADDR'];
                 }
             }else{
                 //不允许就使用getenv获取
                 if(getenv("HTTP_X_FORWARDED_FOR")){
-                    $realip = getenv( "HTTP_X_FORWARDED_FOR");
+                    $ip = getenv( "HTTP_X_FORWARDED_FOR");
                 }elseif(getenv("HTTP_CLIENT_IP")) {
-                    $realip = getenv("HTTP_CLIENT_IP");
+                    $ip = getenv("HTTP_CLIENT_IP");
                 }else{
-                    $realip = getenv("REMOTE_ADDR");
+                    $ip = getenv("REMOTE_ADDR");
                 }
             }
         }
-        return $realip;
+        return $ip??'';
     }
 
     /**
      * PHP判断当前协议是否为HTTPS
      */
-    public function is_https()
+    public function is_https(): bool
     {
         //REQUEST_SCHEME
-        if (isset($_SERVER['REQUEST_SCHEME'])){
-            return $_SERVER['REQUEST_SCHEME']=='https'?true:false;
+        if (isset($_SERVER['REQUEST_SCHEME'])) {
+            return ($_SERVER['REQUEST_SCHEME'] === 'https') ?true:false;
         }
         if (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') {
             return true;
@@ -386,53 +385,54 @@ class Helper extends Container
     /**
      * @Author 皮泽培
      * @Created 2019/9/24 17:37
-     * @return string
-     * @param string $msg  下载速度
+     * @param string $msg  信息
      * @title  js alert 效果
-     * @explain 路由功能说明
+     * @explain js弹窗
      */
-    public function alert($msg)
+    public function alert(string $msg)
     {
         echo "<script>alert('".$msg."');</script>";
     }
 
     /**
-     * Get QR-Code URL for image, from google charts.
      * @title  通过谷歌API获取二维码url
-     * @param string $name
-     * @param string $secret
-     * @param string $title
-     * @param array  $params
+     * @param string $urlencoded 二维码内容
+     * @param string $level 容错级别
+     * @param int $width  宽度
+     * @param int  $height 高度
      * @return string
      */
-    public function getQRCodeGoogleUrl(string $urlencoded, $level = 'M', int $width = 200,int $height=200):string
+    public function getQRCodeGoogleUrl(string $urlencoded,string $level = 'M', int $width = 200,int $height=200):string
     {
         $level = !empty($params['level']) && array_search($params['level'], array('L', 'M', 'Q', 'H')) !== false ? $params['level'] : 'M';
         $urlencoded = urlencode($urlencoded);
-        return 'https://chart.googleapis.com/chart?chs='.$width.'x'.$height.'&chld='.$level.'|0&cht=qr&chl='.$urlencoded.'';
+        return 'https://chart.googleapis.com/chart?chs='.$width.'x'.$height.'&chld='.$level.'|0&cht=qr&chl='.$urlencoded;
     }
 
     /**
      * 获取所有文件目录地址
-     * @param $dir
-     * @param $fileData
+     * @param string $dir 初始化搜索路径
+     * @param array $fileData 搜索结果
+     * @param string $suffix 搜索的文件后缀名
+     * @param string $approve 是否是vendor包模式
+     * @return void
      */
-    public function getFilePathData($dir,&$fileData,string $suffix='.php',string $approve='')
+    public function getFilePathData(string $dir, &$fileData,string $suffix='.php',string $approve='')
     {
         # 判断是否是目录
         if (is_dir($dir)){
             #  是否是vendor包模式
             if ($approve !=='') {
                 $exist = false;
-                if ($dh = opendir($dir)){
-                    while (($file = readdir($dh)) !== false){
-                        if($file != '.' && $file != '..'){
+                if ($dh = opendir($dir)) {
+                    while (($file = readdir($dh)) !== false) {
+                        if($file != '.' && $file != '..') {
                             # 判断是否是目录
-                            if(is_dir($dir.DIRECTORY_SEPARATOR.$file)){
-                                $this->getFilePathData($dir.DIRECTORY_SEPARATOR.$file,$fileData,$suffix,$approve);
-                            }else{
+                            if(is_dir($dir.DIRECTORY_SEPARATOR.$file)) {
+                                $this->getFilePathData($dir.DIRECTORY_SEPARATOR.$file, $fileData, $suffix, $approve);
+                            } else {
                                 # 判断是否是php文件
-                                if($file== $approve){
+                                if($file== $approve) {
                                     $approveInfo = file_get_contents($dir.DIRECTORY_SEPARATOR.$file);
                                     $exist = true;
                                 }
@@ -444,17 +444,17 @@ class Helper extends Container
                 # 有$exist
                 if ($exist){
                     if ($dh = opendir($dir)){
-                        while (($file = readdir($dh)) !== false){
-                            if($file != '.' && $file != '..'){
+                        while (($file = readdir($dh)) !== false) {
+                            if ($file != '.' && $file != '..') {
                                 # 判断是否是目录
-                                if(is_dir($dir.DIRECTORY_SEPARATOR.$file)){
-                                    $this->getFilePathData($dir.DIRECTORY_SEPARATOR.$file,$fileData,$suffix,$approve);
-                                }else{
+                                if (is_dir($dir.DIRECTORY_SEPARATOR.$file)) {
+                                    $this->getFilePathData($dir.DIRECTORY_SEPARATOR.$file, $fileData, $suffix, $approve);
+                                } else {
                                     # 判断是否是php文件
-                                    if(strrchr($file,$suffix) == $suffix){
-                                        if (DIRECTORY_SEPARATOR ==='/'){
+                                    if (strrchr($file,$suffix) == $suffix) {
+                                        if (DIRECTORY_SEPARATOR ==='/') {
                                             $fileData[] = ['path'=>str_replace('..'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR,'../',$dir.DIRECTORY_SEPARATOR.$file),'packageInfo'=>$approveInfo];
-                                        }else{
+                                        } else {
                                             $fileData[] = ['path'=>str_replace('/src','',str_replace('..'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR,'../',$dir.DIRECTORY_SEPARATOR.$file)),'packageInfo'=>$approveInfo];
                                         }
                                     }
@@ -465,15 +465,15 @@ class Helper extends Container
                     }
                 }
             }else{
-                if ($dh = opendir($dir)){
-                    while (($file = readdir($dh)) !== false){
-                        if($file != '.' && $file != '..'){
+                if ($dh = opendir($dir)) {
+                    while (($file = readdir($dh)) !== false) {
+                        if ($file != '.' && $file != '..') {
                             # 判断是否是目录
-                            if(is_dir($dir.DIRECTORY_SEPARATOR.$file)){
+                            if (is_dir($dir.DIRECTORY_SEPARATOR.$file)) {
                                 $this->getFilePathData($dir.DIRECTORY_SEPARATOR.$file,$fileData,$suffix,$approve);
-                            }else{
+                            } else {
                                 # 判断是否是php文件
-                                if(strrchr($file,$suffix) == $suffix){
+                                if (strrchr($file, $suffix) == $suffix) {
                                     $fileData[] = $dir.DIRECTORY_SEPARATOR.$file;
                                 }
                             }
@@ -515,7 +515,7 @@ class Helper extends Container
         {
             # 给中的匿名函数和闭包(closure)参数
             $data = $object(...$param);
-            if (!isset($data['over']) || $data['over']){
+            if (!isset($data['over']) || $data['over']) {
                 yield $data;
                 return ;
             }
@@ -524,26 +524,25 @@ class Helper extends Container
     }
 
     /**
-     * @Author 皮泽培
-     * @Created 2020/10/24 11:25
+     * @title  频率检测
      * @param \Redis $redis redis 缓存对象
      * @param string $key key
-     * @param $value 值
+     * @param string $value 值
      * @param int $period 周期
      * @param int $frequency 频率
      * @return bool  true 超过频率  false  没有
-     * @title  频率检测
+     *
      */
-    public function isFrequency(\Redis $redis,string $key,string $value,int$period = 5,int $frequency=15):bool
+    public function isFrequency(\Redis $redis, string $key, string $value, int$period = 5, int $frequency=15):bool
     {
         $key = $key.':'.$value;
-        if (!$redis->exists($key)){
-            $redis->setex($key,$period,1);
+        if (!$redis->exists($key)) {
+            $redis->setex($key, $period, 1);
             return false;
-        }else{
-            if ($redis->get($key) >$frequency){
+        } else {
+            if ($redis->get($key) > $frequency) {
                 return true;
-            }else{
+            } else {
                 $redis->incr($key); //次数加一
                 return false;
             }
@@ -560,15 +559,15 @@ class Helper extends Container
     {
         # 获取基础控制器的命名空间信息
         if (DIRECTORY_SEPARATOR ==='/'){
-            $useNamespace = str_replace([$socumentRoot.'vendor','.php','/','..'.DIRECTORY_SEPARATOR,'src','..','\\\\'],['','',"\\",'','','','\\'],$path);
+            $useNamespace = str_replace([$socumentRoot.'vendor','.php','/','..'.DIRECTORY_SEPARATOR,'src','..','\\\\'], ['','',"\\",'','','','\\'], $path);
         }else{
-            $useNamespace = str_replace([$socumentRoot.'vendor','.php','/','..'.DIRECTORY_SEPARATOR,DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR,'..'],['','',"\\",'','\\',''],$path);
+            $useNamespace = str_replace([$socumentRoot.'vendor','.php','/','..'.DIRECTORY_SEPARATOR,DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR,'..'], ['','',"\\",'','\\',''], $path);
         }
         # 判断路径中是否有 - 有就删除- 并且替换-后面的字母为大写
-        preg_match_all('/[-][a-z]/s',$useNamespace,$matc);//字段
-        if (!empty($matc[0])){
-            foreach ($matc as $matcValue){
-                foreach ($matcValue as $matcValueS){
+        preg_match_all('/[-][a-z]/s', $useNamespace, $matc);//字段
+        if (!empty($matc[0])) {
+            foreach ($matc as $matcValue) {
+                foreach ($matcValue as $matcValueS) {
                     $useNamespace = str_replace([$matcValueS],[strtoupper(str_replace(['-'],[''],$matcValueS))],$useNamespace);
                 }
             }

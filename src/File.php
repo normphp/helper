@@ -18,9 +18,9 @@ class File
 {
 
     /**
-     *  判断目录是否存在
+     * 判断目录是否存在
      * 不存在创建
-     * @param $dir
+     * @param string $dir
      * @param int $mode
      * @return bool
      */
@@ -34,17 +34,15 @@ class File
     protected $findFileArr = array();
 
     /**
-     * @Author 皮泽培
-     * @Created 2019/7/17 15:03
-     * @param $flodername  在指定的目录查找
-     * @param $filename 需要查找的文件 [模糊查询时为正则表达式]
-     * @param $fuzzy 是否模糊查询[正则表达式]
      * @title  在指定的目录查找指定的文件
-     * @explain 路由功能说明
+     * @param string $flodername 在指定的目录查找
+     * @param string $filename 需要查找的文件 [模糊查询时为正则表达式]
+     * @param bool $fuzzy 是否模糊查询[正则表达式]
      * @return array
      * @throws \Exception
+     * @explain 路由功能说明
      */
-    public function findFile($flodername, $filename,bool $fuzzy=false)
+    public function findFile(string $flodername, string $filename, bool $fuzzy=false)
     {
         if (!is_dir($flodername)) {
             throw new \Exception('Not a directory');
@@ -73,10 +71,8 @@ class File
     }
 
     /**
-     * @Author pizepei
-     * @Created 2019/7/7 8:58
-     * @param $path
      * @title  删除文件夹以及文件夹下的所有文件
+     * @param string $path
      * @explain 清空文件夹函数和清空文件夹后删除空文件夹函数的处理
      */
     public function deldir(string $path)
@@ -85,16 +81,16 @@ class File
         if(is_dir($path)){
             //扫描一个文件夹内的所有文件夹和文件并返回数组
             $p = scandir($path);
-            foreach($p as $val){
+            foreach($p as $val) {
                 //排除目录中的.和..
-                if($val !="." && $val !=".."){
+                if ($val !="." && $val !="..") {
                     //如果是目录则递归子目录，继续操作
-                    if(is_dir($path.$val)){
+                    if (is_dir($path.$val)) {
                         //子目录中操作删除文件夹和文件
                         $this->deldir($path.$val.'/');
                         //目录清空后删除空文件夹
                         @rmdir($path.$val.'/');
-                    }else{
+                    } else {
                         //如果是文件直接删除
                         unlink($path.$val);
                     }
@@ -104,27 +100,23 @@ class File
     }
 
     /**
-     * @Author 皮泽培
-     * @Created 2019/9/24 17:11
      * @param string $path
      * @title  获取文件大小
      * @explain 获取文件大小
      * @return string
      * @router get
      */
-    public function getFileSize(string $path)
+    public function getFileSize(string $path): string
     {
         return number_format(filesize($path) / (1024 * 1024), 2);//去小数点后两位
     }
 
     /**
-     * @Author 皮泽培
-     * @Created 2020/10/24 10:52
      * @param string $path
      * @return array [json] 定义输出返回数据
      * @title  获取文件完整信息
      */
-    public function getFileInfo(string $path)
+    public function getFileInfo(string $path): array
     {
         if(!is_file($path)) {
             return  [
@@ -133,27 +125,24 @@ class File
                 'filemTime'=>'',
             ];
         }
-        $filemtime = filemtime($path);
+        $fileMtime = filemtime($path);
         return  [
             'fileType'=>filetype($path),
             'fileSize'=>$this->getFileSize($path),
-            'filemTime'=>$filemtime,
-            'filemDate'=>date('Y-m-d H:i:s',$filemtime),
+            'filemTime'=>$fileMtime,
+            'filemDate'=>date('Y-m-d H:i:s', $fileMtime),
         ];
     }
     /**
-     * @Author 皮泽培
-     * @Created 2019/9/24 16:46
+     * @title  提供下载
      * @param string $path 不包括base路径的 文件路径(包括文件名)
      * @param string $name 下载时显示的名称包括扩展名的文件名称
      * @param int $buffer  下载速度
      * @param string $base 基础路径
-     * @return string
-     * @title  提供下载
      * @explain 对外通过简单的下载
      * @throws \Exception
      */
-    public function provideDownloads(string $path,string $name,int $buffer=1024,string $base='..'.DIRECTORY_SEPARATOR.'tmp'.DIRECTORY_SEPARATOR)
+    public function provideDownloads(string $path, string $name, int $buffer=1024, string $base='..'.DIRECTORY_SEPARATOR.'tmp'.DIRECTORY_SEPARATOR)
     {
         # 安全起见 路径有一个base路径  $path路径不能包含. ..
         if (strpos($path,'..'.DIRECTORY_SEPARATOR) !== false || strpos($path,'.'.DIRECTORY_SEPARATOR)!== false ){
@@ -275,14 +264,13 @@ class File
     /**
      * @Author 皮泽培
      * @Created 2020/9/12 15:20
-     * @param Spreadsheet $spreadsheet 对象
+     * @param \PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet 对象
      * @param string $filename 文件名称
      * @param string $type 文件类型
      * @title  路由标题
      * @router get
-     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    function officeImportFileOutput( \PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet,$filename='默认',$type='xlsx')
+    function officeImportFileOutput( \PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet, string $filename='默认', string $type='xlsx')
     {
         if ($type ==='xlsx'){
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -307,7 +295,7 @@ class File
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      * @throws \Exception
      */
-    function officeRead(string $file,\Closure $function,float $size=5.00)
+    function officeRead(string $file, \Closure $function, float $size=5.00)
     {
         # 判断文件大小 默认不支持超过1MB
         $fileSize = $this->getFileSize($file);
@@ -388,7 +376,7 @@ class File
      * @throws Exception
      * @author Zou Yiliang
      */
-    public  function downloadFile(string $url, string $fileName,$savePath = '',$header=[],$pattern='cli',bool$restart=false)
+    public  function downloadFile(string $url, string  $savePath = '', $header=[], $pattern='cli' ,bool$restart=false)
     {
         $this->progressBarPattern = $pattern;
         $this->downloaded  = false;
@@ -451,7 +439,7 @@ class File
     protected  $startTheDownloadEOL = false;
     protected $currentDownloadSize = 0;
     /**
-     * 进度条下载.
+     * 进度条下载.（命令行使用）
      * @param $ch
      * @param int $countDownloadSize 总下载量
      * @param int $currentDownloadSize 当前下载量
@@ -494,10 +482,12 @@ class File
      * @param $source
      * @param $dest
      */
-    public function copyDir($source,$dest){
+    public function copyDir($source,$dest)
+    {
         if (!file_exists($dest)) mkdir($dest);
+
         $handle = opendir($source);
-        while (($item = readdir($handle)) !==false){
+        while (($item = readdir($handle)) !==false) {
             if ($item =='.' || $item =='..') continue;
             $_source = $source . '/' . $item;
             $_dest = $dest .'/'.$item;

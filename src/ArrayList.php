@@ -12,54 +12,50 @@ namespace normphp\helper;
 class ArrayList
 {
     /**
-     * @Author 皮泽培
-     * @Created 2019/7/19 11:26
+     * @title  把索引数组value用定义的字符串切割成数组集合
      * @param array $array
      * @param string $string
      * @param bool $strim  true 时 删除\r\n\r\n和空格
-     * @title  把索引数组value用定义的字符串切割成数组集合
      * @explain  把索引数组value用定义的字符串切割成数组集合 相同的key会合并
      * @return array
      * @throws \Exception
      */
-    public function array_explode_value(array $array,string $string,bool $strim=false):array
+    public function array_explode_value(array $array, string $string, bool $strim=false):array
     {
-        if (empty($array)){
+        if (empty($array)) {
             return [];
         }
-        foreach ($array as $value){
+        foreach ($array as $value) {
             $explode = explode($string,$value);
             list($k, $v) = isset($explode[1])?$explode:[$value,$value];
-            if ($strim){
+            if ($strim) {
                 $k = trim(rtrim($k,"\r\n\r\n "),"\r\n\r\n ");
                 $v = trim(rtrim($v,"\r\n\r\n "),"\r\n\r\n ");
             }
             /**
              * 如果出现重复的
              */
-            if (isset($data[$k])){
+            if (isset($data[$k])) {
                 $recursive[$k] = $v;
                 $data = array_merge_recursive($data,$recursive);
             }else{
                 $data[$k] = $v;
             }
         }
-        return $data;
+        return $data??[];
     }
 
     /**
-     * @Author 皮泽培
-     * @Created 2019/12/23 11:53
-     * @param $arr1
-     * @param $arr2
-     * @title  深层合并数组
-     * @explain 深层合并数组(两个)
+     * @param array $arr1
+     * @param array $arr2
      * @return array
      * @throws \Exception
+     * @title  深层合并数组
+     * @explain 深层合并数组(两个)
      */
-    public function array_merge_deep($arr1,$arr2){
+    public function array_merge_deep(array $arr1, array $arr2): array
+    {
         $merged	= $arr1;
-
         foreach($arr2 as $key => &$value){
             if(is_array($value) && isset($merged[$key]) && is_array($merged[$key])){
                 $merged[$key]	= $this->array_merge_deep($merged[$key], $value);
@@ -71,19 +67,18 @@ class ArrayList
                 $merged[$key]	= $value;
             }
         }
-
         return $merged;
     }
 
     /**
      * @Author 皮泽培
      * @Created 2019/12/28 9:30
-     * @param mixed ...$arr1
+     * @param array ...$arr
      * @return array [json] 定义输出返回数据
-     * @title  多数组批量合并
      * @throws \Exception
+     * @title  多数组批量合并
      */
-    public function array_merge_deep_more(...$arr)
+    public function array_merge_deep_more(array ...$arr): array
     {
         if (count($arr) <=1){ throw new \Exception('至少两个array');}
         $count = count($arr);
@@ -92,17 +87,17 @@ class ArrayList
             $merged = array_shift($arr);
             $merged = $this->array_merge_deep($merged,$arr[0]);
         }
-        return $merged;
+        return $merged??[];
     }
     /**
      * @Author 皮泽培
      * @Created 2019/12/26 14:54
      * @title  深层数组排序
-     * @param $data 需要排序的array
+     * @param array $data 需要排序的array
      * @param $condition ['key'=>'SORT_DESC',...]   SORT:SORT_DESC,SORT_ASC
      * @return array
      */
-    public function sortMultiArray(&$data, $condition):array
+    public function sortMultiArray(array  &$data, $condition):array
     {
         if (count($data) <= 0 || empty($condition)) {
             return $data;
@@ -166,14 +161,13 @@ class ArrayList
      * @param mixed ...$arrayData
      * @return array
      */
-    public function arrayAdditional(...$arrayData)
+    public function arrayAdditional(array ...$arrayData)
     {
         # 筛选主项目数据出来 在最后合并
         $array =  array_merge(...$arrayData);
         $data = [];
-        foreach ($array as $k=>$v)
-        {
-            array_push($data,...array_values($v));
+        foreach ($array as $v) {
+            array_push($data, ...array_values($v));
         }
         return $data;
     }
@@ -183,11 +177,11 @@ class ArrayList
      * 快速设置数据: $setData = ['a'=>10,'b'=>50,'c'=>'30','d'=>'data']  $data = ['a'=>100,'b'=>500,'c'=>300]
      *  最后结果 $data = ['a'=>10,'b'=>50,'c'=>'30']
      *  设置的数据如不在$data中时数据不会被处置 设置的数据类型与$data中数据类型不一致是不会被处置数据
-     * @param $setData 需要设置的数据
-     * @param $data  标准模板数据
+     * @param array $setData 需要设置的数据
+     * @param array $data 标准模板数据
      * @return bool
      */
-    public function verifyMergeData($setData,&$data)
+    public function verifyMergeData(array $setData,array &$data)
     {
         foreach ($data as $key=>&$value)
         {
@@ -203,7 +197,14 @@ class ArrayList
         }
     }
 
-
+    /***
+     * 获取LayuiTree
+     * @param array $data
+     * @param array $matchup
+     * @param $param
+     * @param $parent_id
+     * @return array
+     */
     public function getLayuiTree(array $data,array$matchup,$param=[],$parent_id='00000000-0000-0000-0000-000000000000')
     {
         if ($data===[] ||$data===null){return [];}
