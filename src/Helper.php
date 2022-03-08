@@ -261,7 +261,6 @@ class Helper extends Container
     }
 
     /**
-     * @Author 皮泽培
      * @Created 2019/7/19 14:17
      * @param string $json
      * @param bool $assoc
@@ -308,7 +307,6 @@ class Helper extends Container
     }
 
     /**
-     * @Author 皮泽培
      * @Created 2019/7/19 14:19
      * @param array $array
      * @title  array转json字符串 默认不编码中文
@@ -383,7 +381,6 @@ class Helper extends Container
     }
 
     /**
-     * @Author 皮泽培
      * @Created 2019/9/24 17:37
      * @param string $msg  信息
      * @title  js alert 效果

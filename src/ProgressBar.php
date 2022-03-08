@@ -85,7 +85,7 @@ class ProgressBar
      */
     public function cliOutput($now,$sum)
     {
-        $divisor = round($this->length/100,3);
+        $divisor = round($this->length/100, 3);
         $resUnit = $this->setUnit($now,$sum,$this->importUnit);
         $str = '';
         $percentage = $this->percentage($now,$sum);
@@ -93,7 +93,9 @@ class ProgressBar
             # 拼接处理进度条
             $str .= ($percentage*$divisor)<$i ? $this->charEmpty : $this->charFull;
         }
-        $str .=$this->blank.$percentage.'%'.$this->blank.'['.$resUnit['sum'].'/'.$resUnit['unitCount'].']'.$resUnit['unit'];
+        $percentage = sprintf("%.2f",$percentage);
+        $sum = sprintf("%.2f",$resUnit['sum']);
+        $str .= $this->blank.$percentage.'%'.$this->blank.'['.$sum.'/'.$resUnit['unitCount'].']'.$resUnit['unit'];
         echo $this->redirect.$this->blank.$str;
     }
 
@@ -153,7 +155,6 @@ class ProgressBar
         }
         else if ($importUnit ==='GB'){
             $GB = $now;
-            var_dump( $this->unitCount($GB));
             $unit = ($TB = $this->unitCount($GB))<1?'GB':'TB';
         }
         else if ($importUnit ==='TB'){
@@ -163,12 +164,12 @@ class ProgressBar
         /**
          * 结束当前值
          */
-        $importUnitKey = array_search($importUnit,self::UNIT_TYPE);
-        $UnitKey = array_search($unit,self::UNIT_TYPE);
+        $importUnitKey = array_search($importUnit, self::UNIT_TYPE);
+        $UnitKey = array_search($unit, self::UNIT_TYPE);
         $divisor = ($UnitKey-$importUnitKey);
-
+        $unitCount = $this->unitCount($now,$divisor);
         $sum = $divisor===0?$sum:$this->unitCount($sum,$divisor);
-        return ['unit'=>$unit,'unitCount'=>$$unit,'now'=>$now,'sum'=>$sum];
+        return ['unit'=>$unit,'unitCount'=>$unitCount,'now'=>$now,'sum'=>$sum];
     }
     /**
      * @return bool

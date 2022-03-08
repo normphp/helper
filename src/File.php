@@ -376,7 +376,7 @@ class File
      * @throws Exception
      * @author Zou Yiliang
      */
-    public  function downloadFile(string $url, string  $savePath = '', $header=[], $pattern='cli' ,bool$restart=false)
+    public  function downloadFile(string $url, string $fileName,string  $savePath = '', $header=[], $pattern='cli' ,bool$restart=false)
     {
         $this->progressBarPattern = $pattern;
         $this->downloaded  = false;

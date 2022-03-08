@@ -151,7 +151,6 @@ class Str
     }
 
     /**
-     * @Author 皮泽培
      * @Created 2020/11/6 10:44
      * @return string
      * @title  删除字符串中的-和_字符串并转换 -和_字符串后的 第一个字母为 大写
