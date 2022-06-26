@@ -67,7 +67,12 @@ class Str
         $strLen = strlen($str)-1;
         $results = '';
         for($i=1;$i<=$length;$i++){
-            $results  .= ((($int = $str[mt_rand(0,$strLen)])==='0') && $results=== '')?$this->returnEmpty($i--):$int;
+            $begin = ((($int = $str[mt_rand(0,$strLen)])==='0') && $results=== '')?$this->returnEmpty($i--):$int;
+            if ($i == 1 && $begin == 0) {
+                $i--;
+            }else{
+                $results  .= $begin;
+            }
         }
         return (int)$results;
     }
